@@ -28,7 +28,7 @@ class RowForm(RowFormTemplate):
 
     col = "&nbsp" + "<b>&nbsp"+column+"</b>"
     if next((item['IS_NULLABLE'] for item in Global.work_area[Global.current_work_area_name]["table_info"] if item['COLUMN_NAME'] == column),0) != "YES":
-      # add * to column if field is required
+      # add * to column if field is required; i.e. IS_NULLABLE value for column is not YES
       col = "*" + "<b>&nbsp"+column+"</b>"
 
     # only do char count for TextBox and TextArea type fields
@@ -37,7 +37,7 @@ class RowForm(RowFormTemplate):
 
   pass # end of input_change
 
-  def create_custom_select_component(config, is_multi=False):
+  def create_custom_select_component(self, config, is_multi=False):
     """Creates a ColumnPanel containing dynamic RadioButtons or CheckBoxes
 
     along with an optional 'Other' toggle and text input.
