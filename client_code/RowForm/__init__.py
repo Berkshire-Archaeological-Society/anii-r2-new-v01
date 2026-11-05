@@ -606,7 +606,7 @@ def get_custom_select_value(container):
       #
       del_workspace = False
       if action in ["add","insert"]:
-        ret = anvil.server.call("row_insert",table_name,row_list)
+        ret = anvil.server.call("row_insert",Global.site_id,table_name,row_list)
         # if success then goto list contexts
         if ret[:2] == "OK":
           msg = "Row has been successfully inserted to the database."
@@ -623,7 +623,7 @@ def get_custom_select_value(container):
         else:
           msg = "Row has not been inserted to the database, because of " + ret
       elif action in ["edit","update"]:
-        ret = anvil.server.call("row_update",table_name,row_list)
+        ret = anvil.server.call("row_update",Global.site_id,table_name,row_list)
         # if success then goto list contexts
         if ret[:2] == "OK":
           msg = "Row has been successfully updated in the database."
