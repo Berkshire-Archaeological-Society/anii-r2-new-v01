@@ -51,7 +51,7 @@ class ImportForm(ImportFormTemplate):
     msg = "You have selected file: " + file.name + "\nDo you wish to continue?"
     if confirm(content=msg):
       # 1. Start the background task 
-      self.active_task = anvil.server.call("start_import_job", Global.table_name, file)
+      self.active_task = anvil.server.call("start_import_job", Global.site_id, Global.table_name, file)
       # 2. Show a notification so the user knows processing is active
       self.import_progress_msg.text = ""
       # 3. Enable Timer component to poll every 1 second
