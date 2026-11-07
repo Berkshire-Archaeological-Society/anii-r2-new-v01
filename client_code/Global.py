@@ -206,13 +206,28 @@ columns_not_editable = ["email","initials","last_login","password_hash", "n_pass
 
 # predefined width of known columns
 column_width = {}  # defined in configuration.yaml file
-table_column_width = {}
+table_column_width = {}  # defined in configuration.yaml file
 # dropdown list for listed columns (for data input)
 column_with_list = {}   # defined in configuration.yaml file
-table_column_with_list = {}
+table_column_with_list = {}  # defined in configuration.yaml file
 # dropdown options for selected columns
 column_with_dropdown = {}   # defined in configuration.yaml file
-table_column_with_dropdown = {}
+table_column_with_dropdown = {}  # defined in configuration.yaml file
+#
+table_column_meta_data = {}  # defined in configuration.yaml file
+# format is 
+#    <table_name>:                                                      # optional
+#      <column_name>:                                                   # optional
+#        label: "header text for input field"                           # optional - defaults to column name
+#        width: <column width in pixels for table list view>            # optional - defaults to system default
+#        type: dropdown|list|single_select|multi_select                 # required
+#        options:                                                       # required
+#          - "<option_1>"                                               # required
+#          - "<option_2>"                                               # required
+#          - "<option_3>"                                               # required
+#        allow_other: True|False                                        # optional - defaults to False
+#        placeholder: "message to indicate what is allowed for input"   # optional - defaults to 
+#        error: "error message"                                         # optional - defaults to 
 
 context_id = None
 context_items = {}
