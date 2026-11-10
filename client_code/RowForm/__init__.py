@@ -98,7 +98,7 @@ class RowForm(RowFormTemplate):
           and column_name in Global.table_column_meta_data[Global.table_name]
       )
       yaml_rule = (
-          Global.table_column_metat_data[Global.table_name][column_name]
+          Global.table_column_meta_data[Global.table_name][column_name]
           if has_yaml_config
           else {}
       )
