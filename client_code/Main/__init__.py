@@ -50,8 +50,8 @@ class Main(MainTemplate):
     #
     Global.table_column_meta_data = Function.load_column_configurations(globals_from_config["table_column_meta_data"])
     Global.table_column_width = globals_from_config["table_column_width"]
-    Global.table_column_with_dropdown = globals_from_config["table_column_with_dropdown"]
-    Global.table_column_with_list = globals_from_config["table_column_with_list"]
+    #Global.table_column_with_dropdown = globals_from_config["table_column_with_dropdown"]
+    #Global.table_column_with_list = globals_from_config["table_column_with_list"]
     Global.TextArea_columns = globals_from_config["TextArea_columns"]
 
     # TextArea_columns_new has format {'tableA': ['colX'],'tableB': ['colY', 'colZ']} 
