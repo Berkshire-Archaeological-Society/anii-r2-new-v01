@@ -270,3 +270,134 @@ def scroll_log_to_bottom(component):
   except Exception:
     pass
   pass
+
+def load_column_configurations(raw_config):
+  """Parses YAML config into a structured dictionary with defaults."""
+  #raw_config = yaml.safe_load(yaml_string) or {}
+  processed_config = {}
+
+  for table_name, columns in raw_config.items():
+    processed_config[table_name] = {}
+    for col_name, rules in columns.items():
+      processed_config[table_name][col_name] = {
+        "label": rules.get("label", col_name),
+        "width": rules.get("width", 300),
+        "type": rules.get("type"),  # dropdown | list | single_select | multi_select| etc.
+        "options": rules.get("options", []),
+        "allow_other": rules.get("allow_other", False),
+        "placeholder": rules.get(
+          "placeholder", f"Select or enter {col_name}"
+        ),
+        "error": rules.get(
+          "error", f"Please provide a valid selection for {col_name}"
+        ),
+      }
+
+  return processed_config
+
+def create_custom_select_component(config):
+  """Generates a ColumnPanel containing dynamic RadioButtons or CheckBoxes
+
+    along with an optional 'Other' toggle and text input.
+    """
+  container = ColumnPanel()
+  options = config.get("options", [])
+  allow_other = config.get("allow_other", False)
+  is_multi = config.get("type") == "multi_select"
+  group_name = f"grp_{config.get('name', 'select')}"
+
+  ctrl = {
+    "type": config.get("type"),
+    "options_controls": [],
+    "other_toggle": None,
+    "other_input": None,
+  }
+
+  # Render standard predefined options
+  for opt in options:
+    if is_multi:
+      cb = CheckBox(text=opt, value=opt)
+      container.add_component(cb)
+      ctrl["options_controls"].append(cb)
+    else:
+      rb = RadioButton(group_name=group_name, text=opt, value=opt)
+      container.add_component(rb)
+      ctrl["options_controls"].append(rb)
+
+    # Render 'Other' toggle and text input
+  if allow_other:
+    other_txt = TextBox(
+      placeholder="Please specify 'Other'...", visible=False
+    )
+
+    if is_multi:
+      other_toggle = CheckBox(text="Other")
+
+      def on_toggle_change(**e):
+        other_txt.visible = other_toggle.checked
+        if not other_toggle.checked:
+          other_txt.text = ""
+
+    else:
+      other_toggle = RadioButton(group_name=group_name, text="Other")
+
+      def on_toggle_change(**e):
+        other_txt.visible = other_toggle.selected
+        if not other_toggle.selected:
+          other_txt.text = ""
+
+          # Hide 'Other' text input when predefined options are selected
+      for rb in ctrl["options_controls"]:
+
+        def make_reset_handler(txt):
+          return lambda **e: setattr(txt, "visible", False)
+
+        rb.add_event_handler("change", make_reset_handler(other_txt))
+
+    other_toggle.add_event_handler("change", on_toggle_change)
+    container.add_component(other_toggle)
+    container.add_component(other_txt)
+    ctrl["other_toggle"] = other_toggle
+    ctrl["other_input"] = other_txt
+
+  container.tag = ctrl
+  return container
+
+def validate_custom_select(container):
+  """Validates selection state AND checks that 'Other' text is provided if selected.
+
+    Returns (is_valid: bool, error_message: str)
+    """
+  ctrl = getattr(container, "tag", None)
+  if not ctrl:
+    return False, "Invalid field configuration"
+
+  is_multi = ctrl["type"] == "multi_select"
+
+  if is_multi:
+    selected_any = any(cb.checked for cb in ctrl["options_controls"])
+    other_checked = (
+      ctrl["other_toggle"].checked if ctrl["other_toggle"] else False
+    )
+
+    if not (selected_any or other_checked):
+      return False, "Please select at least one option"
+
+    if other_checked and not ctrl["other_input"].text.strip():
+      return False, "Please specify a value for 'Other'"
+
+    return True, ""
+
+  else:  # single_select
+    selected_any = any(rb.selected for rb in ctrl["options_controls"])
+    other_selected = (
+      ctrl["other_toggle"].selected if ctrl["other_toggle"] else False
+    )
+
+    if not (selected_any or other_selected):
+      return False, "Please select an option"
+
+    if other_selected and not ctrl["other_input"].text.strip():
+      return False, "Please specify a value for 'Other'"
+
+    return True, ""

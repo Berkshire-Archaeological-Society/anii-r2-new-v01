@@ -25,8 +25,8 @@ from ..Help import Help
 # branch V054
 
 class Main(MainTemplate):  
-  def __init__(self, **properties):
-    # Set Form properties and Data Bindings.
+    def __init__(self, **properties):
+    # Set Form roperties and Data Bindings.
     self.init_components(**properties)
     #
     self.last_server_update = 0
@@ -47,7 +47,8 @@ class Main(MainTemplate):
     Global.admin_user_initials = globals_from_config["admin_user_initials"]
     Global.prefix_special_finds_table = globals_from_config["prefix_special_finds_table"]
     Global.selected_highlight_colour = globals_from_config["highlight_colour"]
-    Global.table_column_meta_data = globals_from_config["table_column_meta_data"]
+    #
+    Global.table_column_meta_data = Function.load_column_configurations(globals_from_config["table_column_meta_data"])
     Global.table_column_width = globals_from_config["table_column_width"]
     Global.table_column_with_dropdown = globals_from_config["table_column_with_dropdown"]
     Global.table_column_with_list = globals_from_config["table_column_with_list"]
