@@ -25,7 +25,7 @@ from ..Help import Help
 # branch V054
 
 class Main(MainTemplate):  
-    def __init__(self, **properties):
+  def __init__(self, **properties):
     # Set Form roperties and Data Bindings.
     self.init_components(**properties)
     #
