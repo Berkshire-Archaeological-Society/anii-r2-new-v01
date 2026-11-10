@@ -208,7 +208,7 @@ class RowForm(RowFormTemplate):
         input_error.foreground = "#FF0000"
 
         def dynamic_select_validator(comp, err_label=input_error, rule=yaml_rule):
-          is_valid, msg = validate_custom_select(comp)
+          is_valid, msg = Function.validate_custom_select(comp)
           if not is_valid:
             err_label.text = msg or rule.get(
               "error", "Invalid selection"
@@ -448,7 +448,7 @@ class RowForm(RowFormTemplate):
 
       if Global.table_name == "dbdiary" or column_name != "DBAcontrol":
         self.column_panel_1.add_component(col_header, full_width_row=True)
-        self.column_panel_1.add_component(input, full_width_row=True)
+        self.column_panel_1.add_component(input, full_width_row=True, spacing_above="small", spacing_below="small")
         self.column_panel_1.add_component(input_error, full_width_row=True)
         
     # endof for loop item in table_info
