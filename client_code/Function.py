@@ -313,14 +313,20 @@ def create_custom_select_component(config):
     "other_input": None,
   }
 
+  # Helper callback to trigger custom x-change event on container
+  def notify_container_change(**e):
+    container.raise_event("x-change")
+
   # Render standard predefined options
   for opt in options:
     if is_multi:
       cb = CheckBox(text=opt, value=opt)
+      cb.add_event_handler("change", notify_container_change)
       container.add_component(cb)
       ctrl["options_controls"].append(cb)
     else:
       rb = RadioButton(group_name=group_name, text=opt, value=opt)
+      rb.add_event_handler("change", notify_container_change)
       container.add_component(rb)
       ctrl["options_controls"].append(rb)
 
@@ -337,6 +343,7 @@ def create_custom_select_component(config):
         other_txt.visible = other_toggle.checked
         if not other_toggle.checked:
           other_txt.text = ""
+        notify_container_change()
 
     else:
       other_toggle = RadioButton(group_name=group_name, text="Other")
@@ -345,6 +352,7 @@ def create_custom_select_component(config):
         other_txt.visible = other_toggle.selected
         if not other_toggle.selected:
           other_txt.text = ""
+        notify_container_change()
 
           # Hide 'Other' text input when predefined options are selected
       for rb in ctrl["options_controls"]:
@@ -355,6 +363,7 @@ def create_custom_select_component(config):
         rb.add_event_handler("change", make_reset_handler(other_txt))
 
     other_toggle.add_event_handler("change", on_toggle_change)
+    other_txt.add_event_handler("change", notify_container_change)
     container.add_component(other_toggle)
     container.add_component(other_txt)
     ctrl["other_toggle"] = other_toggle
