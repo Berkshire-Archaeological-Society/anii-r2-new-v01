@@ -300,7 +300,7 @@ def create_custom_select_component(config):
 
     along with an optional 'Other' toggle and text input.
     """
-  container = ColumnPanel()
+  container = FlowPanel()
   options = config.get("options", [])
   allow_other = config.get("allow_other", False)
   is_multi = config.get("type") == "multi_select"

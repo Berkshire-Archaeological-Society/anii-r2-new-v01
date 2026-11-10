@@ -217,7 +217,7 @@ class RowForm(RowFormTemplate):
 
         self.validator.require(
           input,
-          ["change"],
+          ["x-change"],
           lambda comp: dynamic_select_validator(comp),
           input_error,
         )
@@ -307,7 +307,7 @@ class RowForm(RowFormTemplate):
           input_error
         )
 
-      # the follwing are probably no lomger required
+      # the follwing are probably no longer required
       elif Global.table_name in Global.table_column_with_list.keys() and column_name in Global.table_column_with_list[Global.table_name].keys():
       #elif column_name in Global.column_with_list.keys():
         # 1. Define your list of allowed words
