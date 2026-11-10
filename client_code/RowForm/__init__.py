@@ -359,8 +359,12 @@ class RowForm(RowFormTemplate):
 
       # if action is View or Edit then fill all fields
       if action in ["edit","update","view"]:
+        raw_data = Global.work_area[Global.current_work_area_name]["data_list"][0][column_name]
+
+
+
+        
         if str(type(input)) == "<class 'anvil_extras.Quill.Quill'>":
-          raw_data = Global.work_area[Global.current_work_area_name]["data_list"][0][column_name]
           #print(f"Quill data for {column_name} is: {raw_data}")
           # the data from the database is json format so use setContemts(text)
           if raw_data:
