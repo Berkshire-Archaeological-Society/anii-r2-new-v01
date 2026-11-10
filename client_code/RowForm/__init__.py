@@ -90,10 +90,40 @@ class RowForm(RowFormTemplate):
       if column_name.endswith(Global.TX_extension):
         continue
 
+      # ---------------------------------------------------------------
+      # 0. QUERY table_column_meta_data CONFIGURATION FOR CURRENT FIELD
+      # ---------------------------------------------------------------
+      has_yaml_config = (
+          Global.table_name in Global.table_column_meta_data
+          and column_name in Global.table_column_meta_data[Global.table_name]
+      )
+      yaml_rule = (
+          Global.table_column_metat_data[Global.table_name][column_name]
+          if has_yaml_config
+          else {}
+      )
+      input_type = yaml_rule.get("type")
+      
       # types can be varchar(length),int(length),text,float,double,date
       # type text can be 65535 char so need to be a TextArea, other can be a TextBox
       # create the label (= column/field name) and the input field
-      if column_type in ["text","longtext"]:
+
+      # -----------------------------------------------------------
+      # 1. COMPONENT CREATION SWITCH BLOCK
+      # -----------------------------------------------------------
+      if input_type in ["single_select", "multi_select"]:
+        input = Function.create_custom_select_component(
+          {**yaml_rule, "name": column_name}
+        )
+        max_length = 65535 if input_type == "multi_select" else 255
+
+      elif input_type in ["dropdown", "list"]:
+        input = DropDown(placeholder=yaml_rule.get("placeholder", column_name))
+        input.items = yaml_rule.get("options", [])
+        input.include_placeholder = True
+        max_length = 255
+
+      elif column_type in ["text","longtext"]:
         if column_name in Global.TextArea_columns:
           # create TextArea input field 
           input = TextArea(placeholder=column_name,tag=column_name)
@@ -125,7 +155,6 @@ class RowForm(RowFormTemplate):
         input = TextBox(placeholder=column_name)
         #input.add_event_handler('change',self.input_change)
         max_length = 30
-
       
       elif Global.table_name in Global.table_column_with_dropdown.keys() and column_name in Global.table_column_with_dropdown[Global.table_name].keys():
       #elif column_name in Global.column_with_dropdown.keys():
@@ -172,7 +201,37 @@ class RowForm(RowFormTemplate):
 
       ################################
       # set input validaton for fields 
-      if column_name in ["YearEnd","YearStart","Year","ContextYear","SurveyYear"]:
+      # -----------------------------------------------------------
+      # 2. VALIDATION HOOKS
+      # -----------------------------------------------------------
+      if input_type in ["single_select", "multi_select"]:
+        input_error.foreground = "#FF0000"
+
+        def dynamic_select_validator(comp, err_label=input_error, rule=yaml_rule):
+          is_valid, msg = validate_custom_select(comp)
+          if not is_valid:
+            err_label.text = msg or rule.get(
+              "error", "Invalid selection"
+            )
+          return is_valid
+
+        self.validator.require(
+          input,
+          ["change"],
+          lambda comp: dynamic_select_validator(comp),
+          input_error,
+        )
+
+      elif input_type in ["dropdown", "list"]:
+        input_error.text = yaml_rule.get(
+          "error", "Please choose an option from the list"
+        )
+        input_error.foreground = "#FF0000"
+        self.validator.require(
+           input, ["change"], lambda dd: dd.selected_value is not None, input_error
+        )
+
+      elif column_name in ["YearEnd","YearStart","Year","ContextYear","SurveyYear"]:
         input_error.text = "Enter a correct year format (-2147483648 to 2147483647)"
         input_error.foreground ="#FF0000"
         # 
@@ -248,6 +307,7 @@ class RowForm(RowFormTemplate):
           input_error
         )
 
+      # the follwing are probably no lomger required
       elif Global.table_name in Global.table_column_with_list.keys() and column_name in Global.table_column_with_list[Global.table_name].keys():
       #elif column_name in Global.column_with_list.keys():
         # 1. Define your list of allowed words
@@ -353,33 +413,44 @@ class RowForm(RowFormTemplate):
         cur_len = 0
 
       # create column header with column_name and column_description in one flowpanel (col_header)
-      # add * to column name if input for field is mandatory
-      if item["IS_NULLABLE"] == "YES":
-        col = "&nbsp"
-      else:
-        col = "*"
-      
-      if str(type(input)) in ["<class 'anvil_extras.Quill.Quill'>", "<class 'anvil.TextBox'>", "<class 'anvil.TextArea'>"]:
-        col = col + "<b>&nbsp"+column_name+"</b>" + " (" + str(cur_len) + "/" + str(max_length) + "):" 
-      else:
-        col = col + "<b>&nbsp"+column_name+"</b>: "  
+      # -----------------------------------------------------------
+      # 3. HEADER AND COMPONENT MOUNTING
+      # -----------------------------------------------------------
+      col = "&nbsp" if item["IS_NULLABLE"] == "YES" else "*"
+      display_label = yaml_rule.get("label", column_name)
 
-      lab = RichText(content=col,font_size=14,tag=column_name,format='restricted_html')
+      if str(type(input)) in [
+        "<class 'anvil_extras.Quill.Quill'>",
+        "<class 'anvil.TextBox'>",
+        "<class 'anvil.TextArea'>",
+      ]:
+        col += f"<b>&nbsp{display_label}</b> ({cur_len}/{max_length}):"
+      else:
+        col += f"<b>&nbsp{display_label}</b>: "
+
+      lab = RichText(
+        content=col, font_size=14, tag=column_name, format="restricted_html"
+      )
       col_comment = item["COLUMN_COMMENT"]
-      col_description = Label(text=col_comment,font_size=14)
+      col_description = Label(text=col_comment, font_size=14)
       col_header = FlowPanel()
       col_header.add_component(lab)
       col_header.add_component(col_description)
-      
-      # add columns details to nested dictionary
-      field_details = {"header": lab, "description": col_description,"field": input, "length": max_length}
-      self.form_fields[column_name] = field_details
-      # add col_header and input field to column_panel
-      # do not add an input field for DBAcontrol column if table is not dbdiary
-      if Global.table_name == "dbdiary" or column_name != "DBAcontrol" : 
-        self.column_panel_1.add_component(col_header,full_width_row=True)
-        self.column_panel_1.add_component(input,full_width_row=True)
-        self.column_panel_1.add_component(input_error,full_width_row=True)
+
+      # Save details for retrieval on submit
+      self.form_fields[column_name] = {
+        "header": lab,
+        "description": col_description,
+        "field": input,
+        "length": max_length,
+        "input_type": input_type,
+      }
+
+      if Global.table_name == "dbdiary" or column_name != "DBAcontrol":
+        self.column_panel_1.add_component(col_header, full_width_row=True)
+        self.column_panel_1.add_component(input, full_width_row=True)
+        self.column_panel_1.add_component(input_error, full_width_row=True)
+        
     # endof for loop item in table_info
 
     # Add a Submit button if Edit or Add action
