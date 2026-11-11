@@ -320,7 +320,7 @@ def create_custom_select_component(config):
   # Render standard predefined options
   for opt in options:
     if is_multi:
-      cb = CheckBox(text=opt, value=opt)
+      cb = CheckBox(text=opt)
       cb.add_event_handler("change", notify_container_change)
       container.add_component(cb)
       ctrl["options_controls"].append(cb)
