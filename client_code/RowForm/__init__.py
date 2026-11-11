@@ -23,18 +23,62 @@ from .. import DataValidation
 class RowForm(RowFormTemplate):
   def input_change(self, **event_args):
     """This method is called when the text in this text box is edited"""
+    sender = event_args["sender"]
     # column name is in placeholder of field
-    column = event_args["sender"].placeholder
+    column = sender.placeholder
+    print(column)
+    # Extract column name from tag or placeholder
+    column = getattr(sender, "tag", None) or sender.placeholder
 
-    col = "&nbsp" + "<b>&nbsp"+column+"</b>"
-    if next((item['IS_NULLABLE'] for item in Global.work_area[Global.current_work_area_name]["table_info"] if item['COLUMN_NAME'] == column),0) != "YES":
-      # add * to column if field is required; i.e. IS_NULLABLE value for column is not YES
-      col = "*" + "<b>&nbsp"+column+"</b>"
+    print(column)
+    if not column or column not in self.form_fields:
+      return
+
+    field_info = self.form_fields[column]
+
+    # Safe retrieval of component reference (supports both "field" and "input" keys)
+    field_ref = field_info.get("field") or field_info.get("input") or sender
+    max_length = field_info.get("length", 65535)
+
+    # Determine if field is required (* vs &nbsp)
+    is_nullable = next(
+        (
+            item["IS_NULLABLE"]
+            for item in Global.work_area[Global.current_work_area_name][
+                "table_info"
+            ]
+            if item["COLUMN_NAME"] == column
+         ),
+         "YES",
+    )
+
+    col = "&nbsp" if is_nullable == "YES" else "*"
+    col += f"<b>&nbsp{column}</b>"
+    #col = "&nbsp" + "<b>&nbsp"+column+"</b>"
+    #if next((item['IS_NULLABLE'] for item in Global.work_area[Global.current_work_area_name]["table_info"] if item['COLUMN_NAME'] == column),0) != "YES":
+    #  # add * to column if field is required; i.e. IS_NULLABLE value for column is not YES
+    #  col = "*" + "<b>&nbsp"+column+"</b>"
 
     # only do char count for TextBox and TextArea type fields
-    if str(type(event_args["sender"])) in ["<class 'anvil.TextBox'>","<class 'anvil.TextArea'>"]:
-      self.form_fields[column]["header"].content = col + " (" + str(len(self.form_fields[column]["field"].text)) + "/" + str(self.form_fields[column]["length"]) + "):"
+    sender_type = str(type(sender))
+    if sender_type in ["<class 'anvil.TextBox'>","<class 'anvil.TextArea'>"]:
+      text_val = field_ref.text or ""
+      cur_len = len(text_val)
+      self.form_fields[column][
+                  "header"
+              ].content = f"{col} ({cur_len}/{max_length}):"
+      #self.form_fields[column]["header"].content = col + " (" + str(len(self.form_fields[column]["field"].text)) + "/" + str(self.form_fields[column]["length"]) + "):"
+    elif sender_type == "<class 'anvil_extras.Quill.Quill'>":
+      # getText() returns plain text content; strip trailing newline added by Quill
+      raw_text = sender.getText() or ""
+      if raw_text.endswith("\n"):
+        raw_text = raw_text[:-1]
 
+        cur_len = len(raw_text)
+        self.form_fields[column][
+                  "header"
+              ].content = f"{col} ({cur_len}/{max_length}):"
+      
   pass # end of input_change
 
   def __init__(self, site_id, table_name, data_list, action, page_info, **properties):
@@ -132,6 +176,7 @@ class RowForm(RowFormTemplate):
           # create a Quill input field
           #input = Quill(placeholder=column_name,toolbar=Global.Quill_toolbarOptions)
           input = Quill(toolbar=Global.Quill_toolbarOptions)
+          input.tag = column_name
           input.add_event_handler('text_change',self.input_change)
         max_length = 65535
         
