@@ -360,11 +360,84 @@ class RowForm(RowFormTemplate):
       # if action is View or Edit then fill all fields
       if action in ["edit","update","view"]:
         raw_data = Global.work_area[Global.current_work_area_name]["data_list"][0][column_name]
+        # -----------------------------------------------------------
+        # 1. HANDLE CUSTOM SINGLE_SELECT AND MULTI_SELECT FIELDS
+        # -----------------------------------------------------------
+        if input_type in ["single_select", "multi_select"]:
+          ctrl = getattr(input, "tag", None)
+          if ctrl:
+            is_multi = input_type == "multi_select"
 
+            if is_multi:
+              # Multi-select: parse string stored in MariaDB (e.g. "Charcoal, Bone, Special Clay")
+              if isinstance(raw_data, str):
+                vals = [v.strip() for v in raw_data.split(",") if v.strip()]
+              elif isinstance(raw_data, (list, tuple)):
+                vals = list(raw_data)
+              else:
+                vals = []
 
+              predefined_options = [cb.text for cb in ctrl["options_controls"]]
+              other_values = []
 
-        
-        if str(type(input)) == "<class 'anvil_extras.Quill.Quill'>":
+              # Check standard boxes or collect non-matching values into 'Other'
+              for v in vals:
+                if v in predefined_options:
+                  idx = predefined_options.index(v)
+                  ctrl["options_controls"][idx].checked = True
+                else:
+                  other_values.append(v)
+
+              # If there are values that didn't match standard options, fill 'Other'
+              if other_values and ctrl["other_toggle"]:
+                ctrl["other_toggle"].checked = True
+                ctrl["other_input"].visible = True
+                ctrl["other_input"].text = ", ".join(other_values)
+
+              cur_len = (
+                len(", ".join(vals))
+                if isinstance(raw_data, (str, list))
+                else 0
+              )
+
+            else:
+              # Single-select: raw_data is a single string value
+              val = str(raw_data) if raw_data is not None else ""
+              predefined_options = [rb.value for rb in ctrl["options_controls"]]
+
+              if val in predefined_options:
+                idx = predefined_options.index(val)
+                ctrl["options_controls"][idx].selected = True
+              elif val and ctrl["other_toggle"]:
+                ctrl["other_toggle"].selected = True
+                ctrl["other_input"].visible = True
+                ctrl["other_input"].text = val
+
+              cur_len = len(val)
+
+          # Handle Read-Only / View mode for custom container controls
+          if action == "view":
+            # Prevent interaction on the whole container without applying :disabled grey CSS
+            input.get_dom_node().style.pointerEvents = "none"
+            #input.enabled = False
+            input.background = "#000000"
+            for cb_or_rb in ctrl["options_controls"]:
+              c#b_or_rb.enabled = False
+              cb_or_rb.foreground = "#ffffff"
+              cb_or_rb.background = "#000000"
+            if ctrl["other_toggle"]:
+              #ctrl["other_toggle"].enabled = False
+              ctrl["other_toggle"].foreground = "#ffffff"
+              ctrl["other_toggle"].background = "#000000"
+            if ctrl["other_input"]:
+              ctrl["other_input"].enabled = False
+              ctrl["other_input"].foreground = "#ffffff"
+              ctrl["other_input"].background = "#000000"
+
+        # -----------------------------------------------------------
+        # 2. EXISTING COMPONENT TYPES
+        # -----------------------------------------------------------
+        elif str(type(input)) == "<class 'anvil_extras.Quill.Quill'>":
           #print(f"Quill data for {column_name} is: {raw_data}")
           # the data from the database is json format so use setContemts(text)
           if raw_data:
