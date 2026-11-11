@@ -11,6 +11,7 @@ import anvil.tables as tables
 import anvil.tables.query as q
 from anvil.tables import app_tables
 from anvil_extras.Quill import Quill
+from anvil.js import get_dom_node
 
 #from ..Validation import Validator
 from ..validation import Validator
@@ -35,7 +36,6 @@ class RowForm(RowFormTemplate):
         column = placeholder_val
     else:
         column = None
-
     if not column or column not in self.form_fields:
       return
 
@@ -68,6 +68,7 @@ class RowForm(RowFormTemplate):
     sender_type = str(type(sender))
     if sender_type in ["<class 'anvil.TextBox'>","<class 'anvil.TextArea'>"]:
       text_val = field_ref.text or ""
+
       cur_len = len(text_val)
       self.form_fields[column][
                   "header"
@@ -78,8 +79,9 @@ class RowForm(RowFormTemplate):
       raw_text = sender.getText() or ""
       if raw_text.endswith("\n"):
         raw_text = raw_text[:-1]
-
+        
         cur_len = len(raw_text)
+                  
         self.form_fields[column][
                   "header"
               ].content = f"{col} ({cur_len}/{max_length}):"
@@ -152,7 +154,7 @@ class RowForm(RowFormTemplate):
           else {}
       )
       input_type = yaml_rule.get("type")
-      
+      #print(column_name, input_type, column_type)
       # types can be varchar(length),int(length),text,float,double,date
       # type text can be 65535 char so need to be a TextArea, other can be a TextBox
       # create the label (= column/field name) and the input field
@@ -173,17 +175,20 @@ class RowForm(RowFormTemplate):
         max_length = 255
 
       elif column_type in ["text","longtext"]:
+        max_length = 65535
         if column_name in Global.TextArea_columns:
           # create TextArea input field 
           input = TextArea(placeholder=column_name,tag=column_name)
           input.add_event_handler('change',self.input_change)
+          # block keystokes when max_length has reached
+          get_dom_node(input).setAttribute("maxlength", str(max_length))
         else:
           # create a Quill input field
           #input = Quill(placeholder=column_name,toolbar=Global.Quill_toolbarOptions)
           input = Quill(toolbar=Global.Quill_toolbarOptions)
           input.tag = column_name
           input.add_event_handler('text_change',self.input_change)
-        max_length = 65535
+
         
       elif column_type == "date":
         input = DatePicker(placeholder=column_name,format="%d-%m-%Y")
@@ -198,22 +203,23 @@ class RowForm(RowFormTemplate):
       elif column_type in ["bool", "tinyint(1)"]:
         #input = TextBox(placeholder=column_name)
         input = DropDown(items=["True", "False"],placeholder=column_name)
-        #input.add_event_handler('change',self.input_change)
+        input.add_event_handler('change',self.input_change)
         max_length = 5
         
       elif column_type == "datetime":
         input = TextBox(placeholder=column_name)
-        #input.add_event_handler('change',self.input_change)
+        input.add_event_handler('change',self.input_change)
         max_length = 30
       
       elif Global.table_name in Global.table_column_with_dropdown.keys() and column_name in Global.table_column_with_dropdown[Global.table_name].keys():
       #elif column_name in Global.column_with_dropdown.keys():
         input = DropDown(placeholder=column_name)
-        #input.add_event_handler('change',self.input_change)
+        input.add_event_handler('change',self.input_change)
         max_length = 5
         
       else:
         # by default create TextBox fields
+        #print(f"TextBox for {column_name}")
         input = TextBox(placeholder=column_name)
         # extract length from type
         match = re.search(r'\d+',column_type)
@@ -222,7 +228,9 @@ class RowForm(RowFormTemplate):
           # for these data types (decimal, double, float) add 1 to max_length as length does not take into account the decimal point
           # (nor for negative symbol but that is not applicable for us)
           max_length = max_length + 1
-
+        
+        # block keystokes when max_length has reached
+        get_dom_node(input).setAttribute("maxlength", str(max_length))
         # add event handler for when input field is changed to update the character count
         input.add_event_handler('change',self.input_change)
 
