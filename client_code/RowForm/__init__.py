@@ -196,8 +196,7 @@ class RowForm(RowFormTemplate):
       ):
         #if ((action == "view") or (action in ["edit"] and item["COLUMN_KEY"] == "PRI") or (action in ["insert"] and item["COLUMN_NAME"] == "SiteId") or column_name in ["DBAcontrol","RegistrationDate"]):
         input.enabled = False
-        input.foreground = "#ffffff"
-        input.background = "#000000"
+        input.background = "#ffffff"
 
       ################################
       # set input validaton for fields 
@@ -354,8 +353,7 @@ class RowForm(RowFormTemplate):
         # force RegistrationDate
         input.text = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         input.enabled = False
-        input.foreground = "#ffffff"
-        input.background = "#000000"
+        input.background = "#ffffff"
 
       # if action is View or Edit then fill all fields
       if action in ["edit","update","view"]:
@@ -418,21 +416,14 @@ class RowForm(RowFormTemplate):
           # Handle Read-Only / View mode for custom container controls
           if action == "view":
             # Prevent interaction on the whole container without applying :disabled grey CSS
-            input.get_dom_node().style.pointerEvents = "none"
-            #input.enabled = False
-            input.background = "#000000"
+            #input.get_dom_node().style.pointerEvents = "none"
+            input.enabled = False
             for cb_or_rb in ctrl["options_controls"]:
-              c#b_or_rb.enabled = False
-              cb_or_rb.foreground = "#ffffff"
-              cb_or_rb.background = "#000000"
+              cb_or_rb.enabled = False
             if ctrl["other_toggle"]:
-              #ctrl["other_toggle"].enabled = False
-              ctrl["other_toggle"].foreground = "#ffffff"
-              ctrl["other_toggle"].background = "#000000"
+              ctrl["other_toggle"].enabled = False
             if ctrl["other_input"]:
               ctrl["other_input"].enabled = False
-              ctrl["other_input"].foreground = "#ffffff"
-              ctrl["other_input"].background = "#000000"
 
         # -----------------------------------------------------------
         # 2. EXISTING COMPONENT TYPES
@@ -461,8 +452,7 @@ class RowForm(RowFormTemplate):
             cur_len = len(raw_data)
           if action == "view":
             input.enable(False)
-            input.foreground = "#ffffff"
-            input.background = "#000000"
+            input.background = "#ffffff"
         elif str(type(input)) == "<class 'anvil.DatePicker'>":
           input.date = Global.work_area[Global.current_work_area_name]["data_list"][0][column_name]
         elif str(type(input)) == "<class 'anvil.DropDown'>":
