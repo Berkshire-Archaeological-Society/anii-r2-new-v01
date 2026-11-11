@@ -24,13 +24,18 @@ class RowForm(RowFormTemplate):
   def input_change(self, **event_args):
     """This method is called when the text in this text box is edited"""
     sender = event_args["sender"]
-    # column name is in placeholder of field
-    column = sender.placeholder
-    print(column)
-    # Extract column name from tag or placeholder
-    column = getattr(sender, "tag", None) or sender.placeholder
+    # column name is in placeholder of field or in tag (quill datatype)
+    tag_val = getattr(sender, "tag", None)
+    placeholder_val = getattr(sender, "placeholder", None)
 
-    print(column)
+    # 2. Extract string value (ComponentTag objects convert to str or can be checked as instance)
+    if isinstance(tag_val, str) and tag_val.strip():
+        column = tag_val
+    elif isinstance(placeholder_val, str) and placeholder_val.strip():
+        column = placeholder_val
+    else:
+        column = None
+
     if not column or column not in self.form_fields:
       return
 
@@ -500,6 +505,7 @@ class RowForm(RowFormTemplate):
             input.background = "#ffffff"
         elif str(type(input)) == "<class 'anvil.DatePicker'>":
           input.date = Global.work_area[Global.current_work_area_name]["data_list"][0][column_name]
+        # this next one is probably no longer used
         elif str(type(input)) == "<class 'anvil.DropDown'>":
           input.selected_value = Global.work_area[Global.current_work_area_name]["data_list"][0][column_name]
         else:
