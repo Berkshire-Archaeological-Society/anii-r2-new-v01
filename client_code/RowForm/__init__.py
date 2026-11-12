@@ -25,6 +25,7 @@ class RowForm(RowFormTemplate):
   def input_change(self, **event_args):
     """This method is called when the text in this text box is edited"""
     sender = event_args["sender"]
+    print(sender)
     # column name is in placeholder of field or in tag (quill datatype)
     tag_val = getattr(sender, "tag", None)
     placeholder_val = getattr(sender, "placeholder", None)
@@ -36,6 +37,7 @@ class RowForm(RowFormTemplate):
         column = placeholder_val
     else:
         column = None
+      
     if not column or column not in self.form_fields:
       return
 
@@ -89,9 +91,20 @@ class RowForm(RowFormTemplate):
       
   pass # end of input_change
 
+  def form_show(self, **event_args):
+    # Forces the browser to scroll directly to the top of your main form container
+    # Target the first component inside the panel instead of the whole panel
+    components = self.column_panel_1.get_components()
+    if components:
+      components[0].scroll_into_view()
+  pass
+  
   def __init__(self, site_id, table_name, data_list, action, page_info, **properties):
     # Set Form properties and Data Bindings.
     self.init_components(**properties)
+    # Bind the form_show event
+    self.set_event_handler("show", self.form_show)
+      
     # Any code you write here will run before the form opens.
     self.site_id = site_id
     Global.table_name = table_name
@@ -138,8 +151,8 @@ class RowForm(RowFormTemplate):
         column_name = item["COLUMN_NAME"]
         column_type = item["COLUMN_TYPE"]
      
-      # ignore columns with Txt at the end
-      if column_name.endswith(Global.TX_extension):
+      # ignore columns with Txt at the end or DBAcontrol
+      if column_name.endswith(Global.TX_extension) or column_name in ["DBAcontrol"]:
         continue
 
       # ---------------------------------------------------------------
@@ -220,7 +233,7 @@ class RowForm(RowFormTemplate):
         
       else:
         # by default create TextBox fields
-        #print(f"TextBox for {column_name}")
+        print(f"TextBox for {column_name}")
         input = TextBox(placeholder=column_name)
         # extract length from type
         match = re.search(r'\d+',column_type)

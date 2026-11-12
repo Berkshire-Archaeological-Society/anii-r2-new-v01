@@ -40,7 +40,7 @@ to check the status of the form.
       self._check()
 
     for e in event_list:
-      component.set_event_handler(e, check_this_component)
+      component.add_event_handler(e, check_this_component)
     self._component_checks.append(check_this_component)
 
     if show_errors_immediately:

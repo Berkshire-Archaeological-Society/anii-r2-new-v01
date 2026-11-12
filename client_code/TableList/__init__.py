@@ -140,9 +140,20 @@ class TableList(TableListTemplate):
   #  confirm(message)
   #pass
 
+  def form_show(self, **event_args):
+    # Forces the browser to scroll directly to the top of your main form container
+    # Target the first component inside the panel instead of the whole panel
+    components = self.table.get_components()
+    if components:
+      components[0].scroll_into_view()
+  pass
+  
   def __init__(self, site_id, table_name, data_list, action, page_info, **properties):
     # Set Form properties and Data Bindings.
     self.init_components(**properties)
+    # Bind the form_show event
+    self.set_event_handler("show", self.form_show)
+
     # make old headers invisible
     #Global.header.visible = False
     #self.column_panel_1.visible = False
