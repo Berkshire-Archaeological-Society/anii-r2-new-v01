@@ -66,6 +66,7 @@ class RowForm(RowFormTemplate):
 
     # only do char count for TextBox and TextArea type fields
     sender_type = str(type(sender))
+    #print(sender_type)
     if sender_type in ["<class 'anvil.TextBox'>","<class 'anvil.TextArea'>"]:
       text_val = field_ref.text or ""
 
