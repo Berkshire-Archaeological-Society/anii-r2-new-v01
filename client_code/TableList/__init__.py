@@ -7,6 +7,7 @@ import anvil.tables as tables
 import anvil.tables.query as q
 from anvil.tables import app_tables
 from .. import indeterminate
+from anvil.js import get_dom_node, window
 
 # import anvil.google.auth, anvil.google.drive
 # from anvil.google.drive import app_files
@@ -143,9 +144,19 @@ class TableList(TableListTemplate):
   def form_show(self, **event_args):
     # Forces the browser to scroll directly to the top of your main form container
     # Target the first component inside the panel instead of the whole panel
-    components = self.table.get_components()
-    if components:
-      components[0].scroll_into_view()
+    # 1. Align the top-left corner of column_panel_1 to the top-left of the viewport
+    get_dom_node(self.column_panel_1).scrollIntoView(
+            {"block": "start", "inline": "start"}
+        )
+
+    # 2. Reset main browser window scrollbars to top-left (x=0, y=0)
+    window.scrollTo(0, 0)
+
+    # 3. Reset Material Design scrollable wrapper (both vertical and horizontal)
+    content_panel = window.document.querySelector(".content")
+    if content_panel:
+      content_panel.scrollTop = 0
+      content_panel.scrollLeft = 0
   pass
   
   def __init__(self, site_id, table_name, data_list, action, page_info, **properties):

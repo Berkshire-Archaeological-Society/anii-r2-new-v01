@@ -233,7 +233,7 @@ class RowForm(RowFormTemplate):
         
       else:
         # by default create TextBox fields
-        print(f"TextBox for {column_name}")
+        #print(f"TextBox for {column_name}")
         input = TextBox(placeholder=column_name)
         # extract length from type
         match = re.search(r'\d+',column_type)
