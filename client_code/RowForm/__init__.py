@@ -25,7 +25,7 @@ class RowForm(RowFormTemplate):
   def input_change(self, **event_args):
     """This method is called when the text in this text box is edited"""
     sender = event_args["sender"]
-    print(sender)
+    #print(sender)
     # column name is in placeholder of field or in tag (quill datatype)
     tag_val = getattr(sender, "tag", None)
     placeholder_val = getattr(sender, "placeholder", None)
@@ -341,7 +341,7 @@ class RowForm(RowFormTemplate):
         )
 
       elif column_name.endswith("Percentage"):
-        input_error.text = "Please enter a percentage between 0-100"
+        input_error.text = "Please enter a percentage value between 0-100 (format 999.999)"
         input_error.foreground ="#FF0000"
         # 
         self.validator.require(

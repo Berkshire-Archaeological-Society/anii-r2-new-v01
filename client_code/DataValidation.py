@@ -44,7 +44,8 @@ def validate_percentage(number):
   #  Allow empty strings (valid for optional fields)
   if num_str == "":
     return True, ""
-  pattern = r"^(100(\.0+)?|[1-9]?\d(\.\d+)?)$"
+  #pattern = r"^(100(\.0+)?|[1-9]?\d(\.\d+)?)$"
+  pattern = r"^(?:100(?:\.0{1,3})?|(?:[1-9]?[0-9])(?:\.[0-9]{1,3})?)$"
   if not number or not re.match(pattern, str(number).strip()):
     return False, "Invalid percentage format."
   return True, ""
