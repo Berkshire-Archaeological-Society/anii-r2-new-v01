@@ -729,6 +729,7 @@ class RowForm(RowFormTemplate):
       del_workspace = False
       if action in ["add","insert"]:
         ret = anvil.server.call("row_insert",Global.site_id,table_name,row_list)
+        print(f"row_insert return: {ret}")
         # if success then goto list contexts
         if ret[:2] == "OK":
           msg = "Row has been successfully inserted to the database."
