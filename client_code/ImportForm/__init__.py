@@ -112,6 +112,8 @@ class ImportForm(ImportFormTemplate):
       self.import_progress_msg.text += " Import file processing completed."
       # 4. Fetch the return message from the completed task
       msg = self.active_task.get_return_value()
+      #extract DBAcontrol from task return value
+      Global.DBAcontrol = msg.split("Change ID:")[1].strip()
       self.message_log.text += msg
       self.message_log.text += "--- FINISHED ---"
       # Auto-scroll to the latest log line
@@ -120,7 +122,10 @@ class ImportForm(ImportFormTemplate):
 
   def cancel_inserts_click(self, **event_args):
     """This method is called when the button is clicked"""
-    #print(Global.DBAcontrol)
+    # dsable commit / cancel buttons
+    self.cancel_inserts.enabled = False
+    self.commit_inserts.enabled = False
+    
     message = anvil.server.call("delete_by_DBAcontrol",Global.DBAcontrol,Global.table_name)
     self.message_log.text += f"\nImport cancelled: {message}"
     byte_string = bytes(self.message_log.text, "utf-8")
@@ -136,6 +141,10 @@ class ImportForm(ImportFormTemplate):
 
   def commit_inserts_click(self, **event_args):
     """This method is called when the button is clicked"""
+    # dsable commit / cancel buttons
+    self.cancel_inserts.enabled = False
+    self.commit_inserts.enabled = False
+    
     byte_string = bytes(self.message_log.text, "utf-8")
     logmsg_name = 'Import_message_' + Global.table_name + '.log'
     text_file = anvil.BlobMedia('text/plain', byte_string, name=logmsg_name)
