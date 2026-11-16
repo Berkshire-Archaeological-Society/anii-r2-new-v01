@@ -691,15 +691,18 @@ class RowForm(RowFormTemplate):
       # all validated input fields are ok
       row_list = {}
       for col in self.form_fields.items():
+        col_name = col[0]
+        field_comp = col[1]["field"]
+        field_type = str(type(field_comp))
         # Add Additional field validation (if needed) before submitting 
-        if str(type(col[1]["field"])) == "<class 'anvil_extras.Quill.Quill'>":
+        if field_type == "<class 'anvil_extras.Quill.Quill'>":
           # here we have to store both the Rtf and the Txt values in two fields (FieldRtf and FieldTxt)
           len_extension = len(Global.RT_extension)
           # check if column is a RT datatype
-          if col[0].endswith(Global.RT_extension):
-            col_name_txt = col[0][:-len_extension] + Global.TX_extension
+          if col_name.endswith(Global.RT_extension):
+            col_name_txt = col_name[:-len_extension] + Global.TX_extension
             # get the clean text contents of the input out field
-            row_list[col_name_txt] = col[1]["field"].getText().strip()
+            row_list[col_name_txt] = field_comp.getText().strip()
             if row_list[col_name_txt] == "\n":
               row_list[col_name_txt] = ""
             # now get the input as html (to be reviewed). Maybe just keep it as Delta format (JSON) is safer
@@ -707,24 +710,33 @@ class RowForm(RowFormTemplate):
             #row_list[col[0]] = Function.clean_quill_regex(col[1]["field"].get_html())
             # just use the json.dump method for the quil getContents()
             #row_list[col[0]] = json.dumps(col[1]["field"].getContents())
-            row_list[col[0]] = Function.convert_quill_to_python(col[1]["field"])
-
+            row_list[col_name] = Function.convert_quill_to_python(col[1]["field"])
+            
           else:
             # text field is not an RT datatype, so just get the plain clean text
-            row_list[col[0]] = col[1]["field"].getText().strip()
+            row_list[col_name] = field_comp.getText().strip()
             
-        elif str(type(col[1]["field"])) == "<class 'anvil.DatePicker'>":
-          row_list[col[0]] = col[1]["field"].date
+        elif field_type == "<class 'anvil.DatePicker'>":
+          row_list[col_name] = field_comp.date
           
-        elif str(type(col[1]["field"])) == "<class 'anvil.DropDown'>":
-          row_list[col[0]] = col[1]["field"].selected_value
+        elif field_type == "<class 'anvil.DropDown'>":
+          row_list[col_name] = field_comp.selected_value
           
-        elif str(type(col[1]["field"])) in ["<class 'anvil.TextBox'>","<class 'anvil.TextArea'>"]:
-          row_list[col[0]] = col[1]["field"].text
+        elif field_type in ["<class 'anvil.TextBox'>","<class 'anvil.TextArea'>"]:
+          row_list[col_name] = field_comp.text
+
+        # Handle custom radio/checkbox containers (including 'Other' text input)
+        elif isinstance(getattr(field_comp, "tag", None), dict) and "options_controls" in field_comp.tag:
+          val = Function.get_custom_select_value(field_comp)
+          print(val)
+          if isinstance(val, list):
+              row_list[col_name] = ", ".join(val) if val else None
+          else:
+              row_list[col_name] = val
 
         # set empty fields to None
-        if row_list[col[0]] in ["","\n"," "]:
-          row_list[col[0]] = None
+        if row_list[col_name] in ["","\n"," "]:
+          row_list[col_name] = None
       #
       del_workspace = False
       if action in ["add","insert"]:

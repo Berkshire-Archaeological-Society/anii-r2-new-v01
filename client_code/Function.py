@@ -410,3 +410,32 @@ def validate_custom_select(container):
       return False, "Please specify a value for 'Other'"
 
     return True, ""
+
+def get_custom_select_value(container):
+  ctrl = getattr(container, "tag", None)
+  if not isinstance(ctrl, dict):
+    return None
+
+  is_multi = ctrl.get("type") == "multi_select"
+
+  if is_multi:
+    # CheckBox
+    selected = [
+            cb.text for cb in ctrl["options_controls"] if cb.checked
+        ]
+    # Read 'Other' input if toggled on and non-empty
+    if ctrl.get("other_toggle") and ctrl["other_toggle"].checked:
+      other_val = (ctrl["other_input"].text or "").strip()
+      if other_val:
+        selected.append(other_val)
+      return selected
+  else:
+    # Single select (RadioButton)
+    for rb in ctrl["options_controls"]:
+      if rb.selected:
+        return rb.value
+    # Read 'Other' input if selected
+    if ctrl.get("other_toggle") and ctrl["other_toggle"].selected:
+      other_val = (ctrl["other_input"].text or "").strip()
+      return other_val if other_val else None
+    return None
