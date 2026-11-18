@@ -1186,3 +1186,15 @@ footer a, .footer .anvil-component {
   margin-bottom: 0px !important;
   line-height: 1.2 !important;
 }
+
+/* Force white background on disabled Anvil inputs */
+input.anvil-component:disabled,
+textarea.anvil-component:disabled,
+select.anvil-component:disabled,
+.anvil-component input:disabled,
+.anvil-component textarea:disabled,
+.anvil-component select:disabled {
+    background-color: #ffffff !important;
+    opacity: 1 !important;
+    -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+}

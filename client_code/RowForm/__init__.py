@@ -496,6 +496,7 @@ class RowForm(RowFormTemplate):
               ctrl["other_toggle"].enabled = False
             if ctrl["other_input"]:
               ctrl["other_input"].enabled = False
+              ctrl["other_toggle"].background = "#ffffff"
 
         # -----------------------------------------------------------
         # 2. EXISTING COMPONENT TYPES
@@ -529,7 +530,9 @@ class RowForm(RowFormTemplate):
           input.date = Global.work_area[Global.current_work_area_name]["data_list"][0][column_name]
         # this next one is probably no longer used
         elif str(type(input)) == "<class 'anvil.DropDown'>":
-          input.selected_value = Global.work_area[Global.current_work_area_name]["data_list"][0][column_name]
+          input.selected_value = None
+          if Global.work_area[Global.current_work_area_name]["data_list"][0][column_name] != "":
+            input.selected_value = Global.work_area[Global.current_work_area_name]["data_list"][0][column_name]
         else:
           input.text = Global.work_area[Global.current_work_area_name]["data_list"][0][column_name]
           if input.text == "None":
