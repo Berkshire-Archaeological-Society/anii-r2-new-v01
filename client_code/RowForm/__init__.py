@@ -447,6 +447,8 @@ class RowForm(RowFormTemplate):
               else:
                 vals = []
 
+              print(vals)
+
               predefined_options = [cb.text for cb in ctrl["options_controls"]]
               other_values = []
 
@@ -457,7 +459,7 @@ class RowForm(RowFormTemplate):
                   ctrl["options_controls"][idx].checked = True
                 else:
                   other_values.append(v)
-
+              print(other_values)
               # If there are values that didn't match standard options, fill 'Other'
               if other_values and ctrl["other_toggle"]:
                 ctrl["other_toggle"].checked = True
