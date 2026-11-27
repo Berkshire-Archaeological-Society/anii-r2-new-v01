@@ -447,8 +447,7 @@ class RowForm(RowFormTemplate):
               else:
                 vals = []
 
-              print(vals)
-
+              #print(vals)
               predefined_options = [cb.text for cb in ctrl["options_controls"]]
               other_values = []
 
@@ -459,7 +458,7 @@ class RowForm(RowFormTemplate):
                   ctrl["options_controls"][idx].checked = True
                 else:
                   other_values.append(v)
-              print(other_values)
+              #print(other_values)
               # If there are values that didn't match standard options, fill 'Other'
               if other_values and ctrl["other_toggle"]:
                 ctrl["other_toggle"].checked = True
@@ -733,12 +732,12 @@ class RowForm(RowFormTemplate):
         # Handle custom radio/checkbox containers (including 'Other' text input)
         elif isinstance(getattr(field_comp, "tag", None), dict) and "options_controls" in field_comp.tag:
           val = Function.get_custom_select_value(field_comp)
-          print(val)
+          print(f"Submit: {val}")
           if isinstance(val, list):
               row_list[col_name] = ", ".join(val) if val else None
           else:
               row_list[col_name] = val
-
+          print(row_list[col_name])
         # set empty fields to None
         if row_list[col_name] in ["","\n"," "]:
           row_list[col_name] = None

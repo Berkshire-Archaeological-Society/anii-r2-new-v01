@@ -426,9 +426,11 @@ def get_custom_select_value(container):
     # Read 'Other' input if toggled on and non-empty
     if ctrl.get("other_toggle") and ctrl["other_toggle"].checked:
       other_val = (ctrl["other_input"].text or "").strip()
+      print(other_val)
       if other_val:
         selected.append(other_val)
-      return selected
+    print(selected)
+    return selected
   else:
     # Single select (RadioButton)
     for rb in ctrl["options_controls"]:
